@@ -13,7 +13,7 @@
    case1) export to mysql
    `
    sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training \
-   --export-dir /loudacre/customer_accounts --table accounts_2
+   --export-dir /loudacre/customer_accounts --table accounts_2 --input-fields-terminated-by ","
    
    `
    
