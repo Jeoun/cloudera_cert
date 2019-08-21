@@ -1,1 +1,52 @@
 
+step1) execute spark-shell
+ `
+ spark-shell
+ `
+ 
+ step2) 
+ scala> val myrdd =sc.textFile( "file:/home/training/training_materials/data/frostroad.txt")
+ scala> myrdd.count()
+res1: Long = 23
+
+ scala> val logsRDD = sc.textFile(logfiles) 
+ scala> val ipsRDD = logsRDD.map(line =>line.split(' ')(0)) 
+ scala> ipsRDD.take(5)
+ scala> logsRDD.map(line=> {val ss = line.split(" "); ss(0)+"/"+ss(2)}).foreach(println)
+
+
+### xml parsing 후 데이터 찾기
+// Stub code to copy into Spark Shell
+
+import scala.xml._
+
+// Given a string containing XML, parse the string, and
+// return an iterator of activation XML records (Nodes) contained in the string
+
+def getActivations(xmlstring: String): Iterator[Node] = {
+    val nodes = XML.loadString(xmlstring) \\ "activation"
+    nodes.toIterator
+}
+
+// Given an activation record (XML Node), return the model name
+def getModel(activation: Node): String = {
+   (activation \ "model").text
+}
+
+// Given an activation record (XML Node), return the account number
+def getAccount(activation: Node): String = {
+   (activation \ "account-number").text
+}
+
+val xmlStringRDD = sc.wholeTextFiles("/loudacre/activations/*")
+val activationsRDD = xmlStringRDD.flatMap(pair => getActivations(pair._2))
+val resultRDD  = activationsRDD.map(activation=>getAccount(activation) + ":" + getModel(activation));
+resultRDD.saveAsTextFile("/loudacre/account-models")
+
+
+bonus >>
+hdfs dfs -put devicestatus.txt /loudacre/
+
+val deviceStatusRDD = sc.textFile("/loudacre/devicestatus.txt")
+deviceRDD.map(line=>line.split(",")).filter(ar=> ar.length == 14).
+
