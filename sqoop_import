@@ -1,9 +1,47 @@
 1. sqoop import
   
   case0) connect to mysql 
-   `mysql -u username -p >> input password
+   `
+   mysql -u username -p >> input password
+   `
+  case0) create mysql table as  
+   `
+   create table  new_table_name like original_table_name
+   `
+  case1)  import single table from mySql to hdfs (default dir : hdfs dfs -ls /user/${userName}/${tableName} )
+    `
+    sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training
+    `
     
-  case1)  import single table from mySql to hdfs (default dir : us
-    `sqoop import --table tableName --connect jdbc:mysql://localhost/databaseName --username username --password password`
+  case2) import partial table from mysql with some columns to target dir
+    `
+    sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training \
+    --password training --columns "acct_num,first_name,last_name,state" --where "state='CA'" \
+    --target-dir /loudacre/customer_accounts
+
+    >> hdfs dfs -ls /loudacre/customer_accounts
+    `
     
-  case2) 
+    
+  case3) import table with fields delimeter
+    `
+    sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training \
+    --password training --columns "acct_num,first_name,last_name,state" --where "state='CA'" \
+    --target-dir /loudacre/customer_accounts_tab --fields-terminated-by "\t"
+    `
+ 
+  case4) import table use compression codec
+   `
+    sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training \
+    --password training --columns "acct_num,first_name,last_name,state" --where "state='CA'" \
+    --target-dir /loudacre/customer_accounts_codec --compression-codec org.apache.hadoop.io.compress.SnappyCodec
+   `
+    
+  case5) import table use compression codec as parquet or avro format
+   `
+    sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training \
+    --password training --columns "acct_num,first_name,last_name,state" --where "state='CA'" \
+    --target-dir /loudacre/customer_accounts_codec_parqeut --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+    --as-parquetfile
+    `
+
