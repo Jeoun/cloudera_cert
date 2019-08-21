@@ -1,0 +1,9 @@
+1. sqoop import
+  
+  case0) connect to mysql 
+   `mysql -u username -p >> input password
+    
+  case1)  import single table from mySql to hdfs (default dir : us
+    `sqoop import --table tableName --connect jdbc:mysql://localhost/databaseName --username username --password password`
+    
+  case2) 
