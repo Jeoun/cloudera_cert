@@ -1,1 +1,19 @@
+2. sqoop export
 
+ case0) connect to mysql 
+   `
+   mysql -u username -p >> input password
+   `
+
+  case0) create mysql table as  
+   `
+   create table  new_table_name like original_table_name
+   `
+ 
+   case1) export to mysql
+   `
+   sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training \
+   --export-dir /loudacre/customer_accounts --table accounts_2
+   
+   `
+   
