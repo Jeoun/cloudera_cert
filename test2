@@ -173,7 +173,11 @@ newDF.write
 .mode(SaveMode.Overwrite)
 .csv("/user/cert/problem7/solution/")
 
-
+tip > 
+save avro
+newDF.write
+.format("avro") // or com.databricks.spark.avro
+.save("/user/cert/problem7/solution2/")
 
 
 
