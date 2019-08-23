@@ -54,5 +54,133 @@ df.write
 .option("compression", "gzip")
 .parquet("/user/cert/problem3/solution/")
 
-## 4. spark read from hdfs write to hdfs
+## 4. spark read from hdfs(no head csvfile) write to hdfs
     -> snappy compression and parquet format
+import org.apache.spark.sql.types._
+val schema = StructType(List(
+  StructField("id", IntegerType)
+  ,StructField("account_id", StringType)
+  ,StructField("device_id", StringType)
+  ,StructField("activation_date", StringType)
+  ,StructField("account_device_id", StringType)
+))
+val dataDF = spark.read.schema(schema)
+.csv("/FileStore/tables/noheadercsv/noHeader.csv")
+
+dataDF
+.select("id","account_id","device_id")
+.write
+.mode(SaveMode.Overwrite)
+.option("compression","snappy")
+.parquet("/user/cert/problem4/solution/")
+
+
+val savedDF = spark.read.parquet("/user/cert/problem4/solution/")
+savedDF.show(1)
+
+## 5. 
+tip) 
+val df2 = df.withColumn("yearTmp", df.year.cast(IntegerType))
+  .drop("year")
+  .withColumnRenamed("yearTmp", "year")
+
+case1)
+val df = spark.read.table("accounts")
+val groupByDF = df.groupBy("address","city").count().withColumnRenamed("count", "total_number")
+groupByDF
+.write
+.option("delimiter", "\t")
+.mode(SaveMode.Overwrite)
+.csv("/user/cert/problem5/solution/")
+
+case2)
+spark.sql("""
+select city, state, count(1) as total_number from accounts group by city, state
+""")
+.write
+.option("delimiter","\t")
+.mode(SaveMode.Overwrite)
+.csv("/user/cert/problem5/solution/")
+
+
+## 6.
+val df = spark.read.parquet("/FileStore/tables/devices_parquet")
+
+df.createOrReplaceTempView("devices")
+
+spark.sql("""
+select devnum, make, model, concat(make,  substr(model, 1,1)) as alias
+from devices
+""")
+.write
+.mode(SaveMode.Overwrite)
+.option("compression","snappy")
+.parquet("/user/cert/problem6/solution/")
+
+
+
+## 7
+> prepare data
+var customerDF = spark.read.table("account4")
+customerDF.show(1)
+
+spark.sql("""
+select acct_num, first_name, last_name from account4
+""")
+.write
+.mode(SaveMode.Overwrite)
+.option("delimiter",",")
+.option("header","true")
+.csv("/user/cert/problem7/data/customer/")
+
+spark.sql("""
+select acct_num, zipcode from account4
+""")
+.write
+.mode(SaveMode.Overwrite)
+.option("delimiter","\t")
+.option("header","true")
+.csv("/user/cert/problem7/data/billing/")
+
+>solution 
+val customer = spark.read.option("delimiter",",")
+.option("header","true")
+.csv("/user/cert/problem7/data/customer/")
+
+customer.show(1)
+
+val billing = spark.read.option("delimiter","\t")
+.option("header","true")
+.csv("/user/cert/problem7/data/billing/")
+
+billing.show(1)
+
+customer.createOrReplaceTempView("customer")
+billing.createOrReplaceTempView("billing")
+
+val newDF = spark.sql("""
+select full_name, sum(zipcode)
+from ( 
+select concat(first_name, ' ', last_name) as full_name, zipcode
+from customer c , billing b 
+where c.acct_num = b.acct_num
+) group by full_name
+""")
+
+newDF.write
+.option("delimiter","\t")
+.option("header","true")
+.mode(SaveMode.Overwrite)
+.csv("/user/cert/problem7/solution/")
+
+
+
+
+
+
+
+
+
+
+
+
