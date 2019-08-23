@@ -1,0 +1,58 @@
+sqoop eval --connect
+
+## 1. sqoop import from mysql to hdfs 
+1) account my sql schema
+ CREATE TABLE `accounts` (
+  `acct_num` int(11) NOT NULL,
+  `acct_create_dt` datetime NOT NULL,
+  `acct_close_dt` datetime DEFAULT NULL,
+  `first_name` varchar(255) NOT NULL,
+  `last_name` varchar(255) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `city` varchar(255) NOT NULL,
+  `state` varchar(255) NOT NULL,
+  `zipcode` varchar(255) NOT NULL,
+  `phone_number` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`acct_num`)
+) 
+
+
+2) sqoop
+sqoop import --connect jdbc:mysql://localhost/loudacre --username training --password training --table accounts --target-dir /user/cert/problem1/solution/ --fields-terminated-by ',' --columns acct_num,acct_close_dt,city,zipcode,created --delete-target-dir --as-textfile
+
+tip) none pk table ->> option -m1 : mapper count 1.
+
+## 2 sqoop export from hdfs to mysql
+1) target mysql table schema
+CREATE TABLE `accounts_to` (
+  `acct_num` int(11) NOT NULL,
+  `acct_close_dt` datetime DEFAULT NULL,
+  `city` varchar(255) NOT NULL,
+  `zipcode` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  PRIMARY KEY (`acct_num`)
+) 
+
+2) sqoop 
+sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training --table accounts_to --export-dir /user/cert/problem1/solution/ --fields-terminated-by ','
+
+## 3. spark read from hive table and write to hdfs
+1) 
+val df = spark.read.table("account3")
+df.printSchema
+df.where("zipcode > 1000")
+.write
+.mode(SaveMode.Overwrite)
+.option("compression","gzip")
+.parquet("/user/cert/problem3/solution/")
+2)
+val df = spark.sql("select * from account3 where zipcode > 1000")
+df.write
+.mode(SaveMode.Overwrite)
+.option("compression", "gzip")
+.parquet("/user/cert/problem3/solution/")
+
+## 4. spark read from hdfs write to hdfs
+    -> snappy compression and parquet format
